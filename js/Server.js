@@ -17,6 +17,7 @@ var server = net.createServer(function (client) {
 
 
 server.listen(8107, function () {
+    console.log("Server is Running at port 8107");
     server.on('close', function () {
     });
     server.on('error', function (err) {
