@@ -3,7 +3,9 @@ var server = net.createServer(function (client) {
     client.setTimeout(500);
     client.setEncoding('utf8');
     client.on('data', function (data) {
-        writeData(client, 'Sending: ' + data.toString());
+        user = data.split("|")[0];
+        // writeData(client, 'Sending: ' + data.toString());
+        writeData(client, 'Sending: nice to meet you! ' + user + "!");
     });
     client.on('end', function () {
         server.getConnections(function (err, count) {
