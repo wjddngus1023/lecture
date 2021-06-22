@@ -8,9 +8,6 @@
 <input type="text" id="user"><input type="button" value="msg submit" onclick="myOnClick()">
 </body>
 <script>
-            if (event.keyCode === 13) {
-                myOnClick();
-            }
 var socket = io.connect('http://woohyun.securekim.com');
 socket.emit('joinRoom', {roomName: 'myroom'});
 socket.on('recMsg', function (data) {
