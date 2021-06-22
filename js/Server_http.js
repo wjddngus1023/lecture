@@ -29,7 +29,7 @@ io.on('connection', function (socket) {
     socket.on('reqMsg', function (data) {
         console.log(data);
         io.sockets.in(roomName).emit('recMsg', {
-            comment: Id + " : " + data.comment + '\n'
+            comment: instanceId + " : " + data.comment + '\n'
         });
     })
 })
