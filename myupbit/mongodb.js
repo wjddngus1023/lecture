@@ -256,7 +256,7 @@ async function init() {
 //init()
 async function initCreate() {
     await init()
-    testAccessKey = "TEST_ACCESSKEY3"
+    testAccessKey = "The_Coin_King"
     try {
         let balance = 1000000
         ret = await makeAccountAndAuth(testAccessKey, balance)
@@ -268,6 +268,7 @@ async function initCreate() {
     console.log(ret)
     //ret = await saveAccount(testAccessKey,tmpaccounts)
 }
+initCreate();
 init();
 
 module.exports = {
