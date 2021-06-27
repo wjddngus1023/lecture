@@ -143,7 +143,10 @@ async function main() { // 트레이딩 메인(반복문사용)
             }
         }
     }
+    // balance = await getBalance()
+    // console.log(balance)
 }
+
 main()
 
 
