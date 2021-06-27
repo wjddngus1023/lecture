@@ -120,14 +120,16 @@ async function main() { // 트레이딩 메인(반복문사용)
     console.log("your current KRW Balance is : " + MyKRWBalance) 
     
     
-    while(MyKRWBalance > 10000){ //현금잔고 10000원이상인 동안
+     while(MyKRWBalance > 100000){ //현금잔고 100000원이상인 동안
         for (var i in retJSON) {
             market = i;
             rsiSignal = retJSON[i].rsiSignal
             if (rsiSignal == "LONG" || rsiSignal == "BIGLONG") {
-                console.log("롱이다 드가자 : " + market);
-                body = await API_buyImmediate(market, 1000000);
-                volume[market] = body.volume
+                if(MyKRWBalance > 1000000){ // 돈이 1000000이상 있을때만
+                    console.log("롱이다 드가자 : " + market);
+                    body = await API_buyImmediate(market, 1000000);
+                    volume[market] = body.volume
+                }
             } else if (rsiSignal == "SHORT" || rsiSignal == "BIGSHORT") {
                 balance = await getBalance()
                 let volume;
