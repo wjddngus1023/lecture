@@ -38,7 +38,7 @@ async function getBalance() {
 }
 
 //얼마너치살건지
-async function API_buyImmediate(market, price) {
+async function API_buyImmediate(market, price){ 
     const body = {
         market: market,
         side: 'bid',
@@ -59,13 +59,13 @@ async function API_buyImmediate(market, price) {
     const options = {
         method: "POST",
         url: server_url + "/v1/orders",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {Authorization: `Bearer ${token}`},
         json: body
     }
-    return new Promise(function (resolve, reject) {
+    return new Promise(function(resolve, reject) {
         request(options, (error, response, body) => {
             if (error) reject();
-            console.log(response.statusCode)
+            console.log(response.statusCode) 
             resolve(body)
         })
     });
@@ -109,31 +109,39 @@ volume = {}
 async function main() { // 트레이딩 메인(반복문사용)
 
    
-    
-    ret = await get('http://kali.securekim.com:3082/view')
+    moment = 1.0;
+
+    ret = await get('http://kali.securekim.com:3082/signals');
     
     retJSON = JSON.parse(ret);
+
+    MyKRWBalance = await getBalance();
+    MyKRWBalance = JSON.parse(MyKRWBalance)[0].balance
+    console.log("your current KRW Balance is : " + MyKRWBalance) 
     
-    for (var i in retJSON) {
-        market = i;
-        rsiSignal = retJSON[i].rsiSignal
-        if (rsiSignal == "LONG" || rsiSignal == "BIGLONG") {
-            console.log("!!!!BUY!!!! MARKET : " + market);
-            body = await API_buyImmediate(market, 1000000);
-            volume[market] = body.volume
-        } else if (rsiSignal == "SHORT" || rsiSignal == "BIGSHORT") {
-            balance = await getBalance()
-            let volume;
-            for (var i in balance) {
-                if ("KRW-" + balance[i].currency == market) {
-                    volume = balance[i].balance;
+    
+    while(MyKRWBalance > 10000){ //현금잔고 10000원이상인 동안
+        for (var i in retJSON) {
+            market = i;
+            rsiSignal = retJSON[i].rsiSignal
+            if (rsiSignal == "LONG" || rsiSignal == "BIGLONG") {
+                console.log("롱이다 드가자 : " + market);
+                body = await API_buyImmediate(market, 1000000);
+                volume[market] = body.volume
+            } else if (rsiSignal == "SHORT" || rsiSignal == "BIGSHORT") {
+                balance = await getBalance()
+                let volume;
+                for (var i in balance) {
+                    if ("KRW-" + balance[i].currency == market) {
+                        volume = balance[i].balance;
+                    }
                 }
+                console.log("돔황차~ : " + market)
+                await API_sellImmediate(market, volume[market]);
             }
-            await API_sellImmediate(market, volume[market]);
         }
     }
 }
-
 main()
 
 
