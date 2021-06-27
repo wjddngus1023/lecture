@@ -4,9 +4,18 @@ const sign = require('jsonwebtoken').sign
 const crypto = require('crypto')
 const queryEncode = require("querystring").encode
 
-const access_key = "The_Coin_King"
-const secret_key = "F+aO+tPbhP27slvdJdYC2yLh6AERD9azCbVT2wn7SYg="
-const server_url = "http://127.0.0.1"
+const access_key = "testwjddngus1023"
+const secret_key = "TEST_SECRET_KET"
+const server_url = "http://ubuntu.securekim.com"
+
+async function get(url){
+    return new Promise(function(resolve, reject) {
+        request(url, function (err, res, resbody) {
+            if(err){ reject(err) } else {
+                console.log('GET :', res.statusCode); 
+                resolve(resbody) 
+            }});
+})}
 
 async function getBalance() {
     const payload = {
@@ -63,7 +72,7 @@ async function API_buyImmediate(market, price) {
 }
 
 //몇개팔건지
-async function API_sellImmediate(market, volume) {
+async function API_sellImmediate(market, volume){
     const body = {
         market: market,
         side: 'ask',
@@ -84,21 +93,51 @@ async function API_sellImmediate(market, volume) {
     const options = {
         method: "POST",
         url: server_url + "/v1/orders",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {Authorization: `Bearer ${token}`},
         json: body
     }
-    return new Promise(function (resolve, reject) {
+    return new Promise(function(resolve, reject) {
         request(options, (error, response, body) => {
             if (error) reject();
-            console.log(response.statusCode)
+            console.log(response.statusCode) 
             resolve(body)
         })
     });
 }
+volume = {}
+
+async function main() { // 트레이딩 메인(반복문사용)
+
+   
+    
+    ret = await get('http://kali.securekim.com:3082/view')
+    
+    retJSON = JSON.parse(ret);
+    
+    for (var i in retJSON) {
+        market = i;
+        rsiSignal = retJSON[i].rsiSignal
+        if (rsiSignal == "LONG" || rsiSignal == "BIGLONG") {
+            console.log("!!!!BUY!!!! MARKET : " + market);
+            body = await API_buyImmediate(market, 1000000);
+            volume[market] = body.volume
+        } else if (rsiSignal == "SHORT" || rsiSignal == "BIGSHORT") {
+            balance = await getBalance()
+            let volume;
+            for (var i in balance) {
+                if ("KRW-" + balance[i].currency == market) {
+                    volume = balance[i].balance;
+                }
+            }
+            await API_sellImmediate(market, volume[market]);
+        }
+    }
+}
+
+main()
 
 
 
-async function main() {
 
     // var access_key = "QNNtkaroxY3ASQrhxXXaAxuqJxFYtko61Y1xBPlW"
     // var secret_key = "NW7dHskx9JQsHx4dOQM7i2RGuhG3qdmWBPkLnpxY"
@@ -152,23 +191,19 @@ async function main() {
  ////////////////////TESTED////////////////
      */
     //// ERROR TEST - BUY ////
-    body = await getBalance()
-    body = await API_buyImmediate("KRW-BTC", 1000000);  // 수수료 에러
-    body = await API_buyImmediate("KRW-BTC", 500000);   // 정상 구매
-    body = await API_sellImmediate("KRW-BTC", 1.0);     // 정상 판매
-    body = await API_buyImmediate("KRW-BTC", -1);       // 범위 에러
-    body = await API_buyImmediate("KRW-BTC", 1);        // 최소 에러
-    body = await API_buyImmediate("KRW-BTC", 1234);     // 단위 에러
-    body = await API_buyImmediate("KRW-BTC", "");       // 가격 에러
-    body = await API_buyImmediate("KRW-BTC", 100000000);  // 가격 에러
-    body = await API_buyImmediate("KRW-ABC", 10000);    // 마켓 에러
-    body = await API_buyImmediate("", 10000);           // 마켓 에러
-    body = await API_buyImmediate("KRW-ABC-BTC", 10000);// 마켓 에러
-    body = await API_sellImmediate("KRW-BTC", 100);      // 개수 에러
+    // body = await getBalance()
+    // body = await API_buyImmediate("KRW-BTC", 1000000);  // 수수료 에러
+    // body = await API_buyImmediate("KRW-BTC", 500000);   // 정상 구매
+    // body = await API_sellImmediate("KRW-BTC", 1.0);     // 정상 판매
+    // body = await API_buyImmediate("KRW-BTC", -1);       // 범위 에러
+    // body = await API_buyImmediate("KRW-BTC", 1);        // 최소 에러
+    // body = await API_buyImmediate("KRW-BTC", 1234);     // 단위 에러
+    // body = await API_buyImmediate("KRW-BTC", "");       // 가격 에러
+    // body = await API_buyImmediate("KRW-BTC", 100000000);  // 가격 에러
+    // body = await API_buyImmediate("KRW-ABC", 10000);    // 마켓 에러
+    // body = await API_buyImmediate("", 10000);           // 마켓 에러
+    // body = await API_buyImmediate("KRW-ABC-BTC", 10000);// 마켓 에러
+    // body = await API_sellImmediate("KRW-BTC", 100);      // 개수 에러
     /*
     // ERROR TEST - SELL ////
     */
-}
-
-
-main()
