@@ -4,8 +4,8 @@ const sign = require('jsonwebtoken').sign
 const crypto = require('crypto')
 const queryEncode = require("querystring").encode
 
-const access_key = "testwjddngus1023"
-const secret_key = "TEST_SECRET_KET"
+const access_key = "wjddngus1023"
+const secret_key = "t/oUeiRNgR/odrFtowbJ0tuz720zw5pOS+Yfo1Y4igo="
 const server_url = "http://ubuntu.securekim.com"
 
 async function get(url){
@@ -104,6 +104,29 @@ async function API_sellImmediate(market, volume){
         })
     });
 }
+
+async function sellAll() {// 전량매각
+    _balance = await getBalance();
+    _balance = JSON.parse(_balance);
+    for (let i in _balance) {
+      market = "KRW-" + _balance[i].currency;
+      balance = _balance[i].balance;
+      if (market != "KRW-KRW" && balance > 0) {
+        API_sellImmediate(market, balance);
+      }
+    }
+  }
+
+async function Armageddon(){ // 아마겟돈(전량 매각하고 새출발)
+    sellAll()
+}
+async function LastGamble(){ // 망하면 10만원남기고 BTC풀매수하고 기도
+    console.log("Last Gamble : " + market);
+    body = await API_buyImmediate(market[0], MyKRWBalance - 100000);
+    volume[market] = body.volume
+}
+
+
 volume = {}
 
 async function main() { // 트레이딩 메인(반복문사용)
@@ -118,16 +141,18 @@ async function main() { // 트레이딩 메인(반복문사용)
     MyKRWBalance = await getBalance();
     MyKRWBalance = JSON.parse(MyKRWBalance)[0].balance
     console.log("your current KRW Balance is : " + MyKRWBalance) 
+
     
     
-     while(MyKRWBalance > 100000){ //현금잔고 100000원이상인 동안
+    
+     while(MyKRWBalance > 0){ //돈없을때까지 무한동력
         for (var i in retJSON) {
             market = i;
             rsiSignal = retJSON[i].rsiSignal
             if (rsiSignal == "LONG" || rsiSignal == "BIGLONG") {
-                if(MyKRWBalance > 1000000){ // 돈이 1000000이상 있을때만
-                    console.log("롱이다 드가자 : " + market);
-                    body = await API_buyImmediate(market, 1000000);
+                if(MyKRWBalance > 5000000){ // 현금 500만원까지 유지
+                    console.log("자 드가자 : " + market);
+                    body = await API_buyImmediate(market, 100000);
                     volume[market] = body.volume
                 }
             } else if (rsiSignal == "SHORT" || rsiSignal == "BIGSHORT") {
@@ -143,8 +168,18 @@ async function main() { // 트레이딩 메인(반복문사용)
             }
         }
     }
-    // balance = await getBalance()
-    // console.log(balance)
+    MyCoinValue = await getBalance();
+    for(i = 1; i < getBalance.length ; i++){ // 현재 코인가치 출력
+        MyCoin = JSON.parse(MyCoinValue)[i].balance
+        MyValue = JSON.parse(MyCoinValue)[i].avg_buy_price
+        CoinValue = MyCoin * MyValue
+        console.log(CoinValue + "\n")
+        TotalCoinValue += CoinValue
+    }
+    if(TotalCoinValue + MyKRWBalance < 8000000){ // 현금 + 보유코인가치 800만 이하면 다팔고 새시작
+        await Armageddon();
+        await LastGamble();
+    }
 }
 
 main()
@@ -172,51 +207,4 @@ main()
         {"currency":"WIN","balance":"730.56498603","locked":"0.0","avg_buy_price":"0","avg_buy_price_modified":false,"unit_currency":"KRW"},
         {"currency":"META","balance":"0.0","locked":"25021.75517441","avg_buy_price":"116.29","avg_buy_price_modified":false,"unit_currency":"KRW"}
     ]
-    */
-    /*
-     body = await API_buyImmediate("KRW-BTC", 1000000);       // 수수료 에러
-     console.log(body) //체크완료
-     body = await getBalance()
-     console.log(body)
-     body = await API_buyImmediate("KRW-BTC", 500000);
-     console.log(body)
-     body = await API_sellImmediate("KRW-BTC", 1.0);
-     console.log(body)
-     body = await API_buyImmediate("KRW-BTC", -1);       // 범위 에러
-     console.log(body)
-     body = await API_buyImmediate("KRW-BTC", 1);        // 최소 에러
-     console.log(body)
-     body = await API_buyImmediate("KRW-BTC", 1234);     // 단위 에러
-     console.log(body)
-     body = await API_buyImmediate("KRW-BTC", "");       // 가격 에러
-     console.log(body)
-     body = await API_buyImmediate("KRW-BTC", 100000000);  // 가격 에러
-     console.log(body)
-     body = await API_buyImmediate("KRW-ABC", 10000);    // 마켓 에러
-     console.log(body)
-     body = await API_buyImmediate("", 10000);           // 마켓 에러
-     console.log(body)
-     body = await API_buyImmediate("KRW-ABC-BTC", 10000);// 마켓 에러
-     console.log(body)
-     body = await API_sellImmediate("KRW-BTC", 100);      // 개수 에러
-     console.log(body)
- 
- ////////////////////TESTED////////////////
-     */
-    //// ERROR TEST - BUY ////
-    // body = await getBalance()
-    // body = await API_buyImmediate("KRW-BTC", 1000000);  // 수수료 에러
-    // body = await API_buyImmediate("KRW-BTC", 500000);   // 정상 구매
-    // body = await API_sellImmediate("KRW-BTC", 1.0);     // 정상 판매
-    // body = await API_buyImmediate("KRW-BTC", -1);       // 범위 에러
-    // body = await API_buyImmediate("KRW-BTC", 1);        // 최소 에러
-    // body = await API_buyImmediate("KRW-BTC", 1234);     // 단위 에러
-    // body = await API_buyImmediate("KRW-BTC", "");       // 가격 에러
-    // body = await API_buyImmediate("KRW-BTC", 100000000);  // 가격 에러
-    // body = await API_buyImmediate("KRW-ABC", 10000);    // 마켓 에러
-    // body = await API_buyImmediate("", 10000);           // 마켓 에러
-    // body = await API_buyImmediate("KRW-ABC-BTC", 10000);// 마켓 에러
-    // body = await API_sellImmediate("KRW-BTC", 100);      // 개수 에러
-    /*
-    // ERROR TEST - SELL ////
-    */
+   
